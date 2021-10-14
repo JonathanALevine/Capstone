@@ -1,0 +1,34 @@
+N = 30;
+vtx = zeros(N*4 + 5, 2);
+pitch = 0.125e-6;
+w = pitch;
+duty = 0.5;
+
+vtx(1, :) = [0, -w];
+vtx(2, :) = [0, w];
+vtx(3, :) = [N*pitch + pitch/2, w];
+
+cc = 1;
+for (n = 4; n <= (N*4 + 5); n = n + 2) {
+if (mod(cc, 2) == 1) {
+    vtx(n, 1) = cc*pitch*duty;
+    vtx(n, 2) = w/2;
+    vtx(n + 1, 1) = cc*pitch*duty;
+    vtx(n + 1, 2) = -w/2;
+    cc = cc + 1;
+} else {
+    vtx(n, 1) = cc*pitch*duty;
+    vtx(n, 2) = -w/2;
+    vtx(n + 1, 1) = cc*pitch*duty;
+    vtx(n + 1, 2) = w/2;
+    cc = cc + 1;
+}
+}
+vtx(end, :) = [(cc - 1)*pitch*duty, -w];
+
+select("CHARGE::p_top_a");
+set("vertices", vtx);
+set("x", 5.2e-6 + pitch/2);
+select("CHARGE::p_top_b");
+set("vertices", vtx);
+

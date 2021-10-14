@@ -1,0 +1,23 @@
+switchtolayout;
+select("np density");
+
+importdataset("disk_vertical_junc.mat");
+#importdataset("disk_double_junc.mat");
+#importdataset("disk_staggered_junc.mat");
+
+set("V_anode_index", 1);
+#set("V_cathode_index", 1);
+
+findmodes;
+a = getdata("mode1", "neff");
+loss = getdata("mode1", "loss");
+
+switchtolayout;
+select("np density");
+set("V_anode_index", 3);
+#set("V_cathode_index", 3);
+
+findmodes;
+b = getdata("mode1", "neff");
+del_neff = abs(a - b);
+fom = del_neff/loss;

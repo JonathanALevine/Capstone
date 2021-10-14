@@ -1,0 +1,23 @@
+b = 0.2;
+s = 0.15;
+l = 0.5;
+r = 5e-6;
+n = 120;
+
+addgroup;
+set("name", "swg_ring");
+
+for (i = 0:(n - 1)) {
+    addpoly;
+    vtx = [0,-b/2;l,-s/2;l,s/2;0,b/2]*1e-6;
+    set("name", "poly");
+    set("vertices", vtx);
+    set("z span", 0.22e-6);
+    set("z", 0.11e-6);
+    set("material", "Si (Silicon) - Palik");
+    set("x", r*cos(2*pi*i/n));
+    set("y", r*sin(2*pi*i/n));
+    set("first axis", "z");
+    set("rotation 1", 360*i/n);
+    addtogroup("swg_ring");
+}

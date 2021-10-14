@@ -1,0 +1,19 @@
+switchtolayout;
+select("np density");
+importdataset("disk_zipper_junc.mat");
+
+n_array = zeros(1,9);
+loss_array = zeros(1,9);
+set("V_anode_index", 1);
+findmodes;
+neff0 = getdata("mode1", "neff");
+loss_array(1) = getdata("mode1", "loss");
+
+for (n = 2; n <=9; n = n + 1){
+    switchtolayout;
+    select("np density");
+    set("V_anode_index", n);
+    findmodes;
+    n_array(n) = getdata("mode1", "neff") - neff0;
+    loss_array(n) = getdata("mode1", "loss");
+}

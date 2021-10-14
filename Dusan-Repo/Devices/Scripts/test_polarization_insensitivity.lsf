@@ -1,0 +1,19 @@
+switchtolayout;
+select("fiber");
+set("theta0", 14.375);
+select("gc");
+set("pitch", 7.5e-7);
+set("duty cycle", .65);
+set("fill_little", .25);
+select("FDTD::ports");
+set("source mode", "mode 1");
+run;
+a = getresult("FDTD::ports::port 3", "T");
+switchtolayout;
+select("FDTD::ports");
+set("source mode", "mode 2");
+run;
+b = getresult("FDTD::ports::port 2", "T");
+
+x = linspace(1.3e-6, 1.7e-6, 200);
+plot(x, abs(a.T), abs(b.T));
