@@ -65,7 +65,6 @@ for epoch in range(100000):
 print(gratingCouplerNet(x[0]))
 print(Y[0])
 print(loss_function(gratingCouplerNet(x[0]), Y[0]))
-print("Hello")
 
 # grating_coupler = Network()
 # print(grating_coupler)
