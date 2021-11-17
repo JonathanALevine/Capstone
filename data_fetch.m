@@ -1,19 +1,18 @@
 
+close all; clc;  clear all; %initialization
+
 data = load("Dusan-Repo/data.mat").gc_data.examples;
 
 number_of_examples = size(data,2);
 A = [];
+lambdas = linspace(1.5*10^(-6), 1.6*10^(-6), 50);
 
-% for i = 1:number_of_examples
-%     row = []
-%     for j = 1:size(data(1).labels, 2)
-%         row(j) = data(i).labels(j);
-%     end
-%     A = [A; row]; 
-% end
-% 
-% A
-% 
-% writematrix(A, 'labels.csv')
+for i = 1:number_of_examples
+    [min_val, index] = min(data(i).labels);
+    lambda_val = lambdas(index);
+    transmission_val = min_val;
+    row = [data(i).features, lambda_val, transmission_val];
+    A = [A; row];
+end
 
-plot(data(1).labels)
+writematrix(A, 'data.csv');

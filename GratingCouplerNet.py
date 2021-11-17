@@ -13,11 +13,11 @@ class Network(nn.Module):
 		super().__init__()
 
 		# Inputs to hidden layer linear transformation
-		self.input = nn.Linear(3, 50)
-		self.first_hidden = nn.Linear(50, 50)
-		self.second_hidden = nn.Linear(50, 50)
-		self.third_hidden = nn.Linear(50, 50)
-		self.output = nn.Linear(50, 50)
+		self.input = nn.Linear(3, 100)
+		self.first_hidden = nn.Linear(100, 100)
+		self.second_hidden = nn.Linear(100, 100)
+		self.third_hidden = nn.Linear(100, 100)
+		self.output = nn.Linear(100, 50)
 
 		self.relu = nn.ReLU()
 
@@ -45,26 +45,29 @@ class Dataset():
 		return torch.Tensor(pandas.read_csv(path_to_values, header=None).values)
 
 
+x = Dataset.get_values(features_path)
+Y = 
+
 x = torch.nn.functional.normalize(Dataset.get_values(features_path))
 Y = torch.nn.functional.normalize(Dataset.get_values((labels_path)))
 
-gratingCouplerNet = Network()
-optimizer = torch.optim.SGD(gratingCouplerNet.parameters(), lr=0.0001)
-loss_function = torch.nn.MSELoss()
+# gratingCouplerNet = Network()
+# optimizer = torch.optim.SGD(gratingCouplerNet.parameters(), lr=0.0001)
+# loss_function = torch.nn.MSELoss()
 
-for epoch in range(100000):
-	prediction = gratingCouplerNet(x)
-	loss = loss_function(prediction, Y)
+# for epoch in range(100000):
+# 	prediction = gratingCouplerNet(x)
+# 	loss = loss_function(prediction, Y)
 
-	optimizer.zero_grad()
-	loss.backward()
-	optimizer.step()
-	print("Epoch: {}, Loss: {:0.6f}".format(epoch, loss))
+# 	optimizer.zero_grad()
+# 	loss.backward()
+# 	optimizer.step()
+# 	print("Epoch: {}, Loss: {:0.6f}".format(epoch, loss))
 
 
-print(gratingCouplerNet(x[0]))
-print(Y[0])
-print(loss_function(gratingCouplerNet(x[0]), Y[0]))
+# print(gratingCouplerNet(x[0]))
+# print(Y[0])
+# print(loss_function(gratingCouplerNet(x[0]), Y[0]))
 
 # grating_coupler = Network()
 # print(grating_coupler)
