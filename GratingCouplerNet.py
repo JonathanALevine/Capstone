@@ -6,74 +6,139 @@ import pandas
 
 features_path = "features.csv"
 labels_path = "labels.csv"
+dataset_path = "data.csv"
+new_dataset = "output_frame.csv"
+
+
+def get_dataset(path_to_dataset:str)->pandas.DataFrame:
+    return pandas.read_csv(path_to_dataset, header=None)
+
+
+def get_dataset_no_zeroes(dataframe:pandas.DataFrame)->pandas.DataFrame:
+    return dataframe[dataframe[0] != 0]
+
+
+def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
+    return dataframe[["Fill Factor", "Pitch", "Duty Cycle", "Theta", "Lambda", "Mode"]]
+
+
+def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
+    return dataframe[['Transmission']]
+
+
+def get_features_no_zeroes(dataframe:pandas.DataFrame)->torch.Tensor:
+    return torch.tensor(dataframe[dataframe[0] != 0].iloc[:,[0,1,2]].values)
+
+
+def get_labels_no_zeroes(dataframe:pandas.DataFrame)->torch.Tensor:
+    return torch.tensor(dataframe[dataframe[0] != 0].iloc[:,[3, 4]].values)
+    
+
+def transform_features(DataFrame:pandas.DataFrame)->torch.tensor:
+    tensor = torch.tensor(DataFrame.values)
+    tensor[:,0:5] = np.log10(tensor[:,0:5])
+    return tensor
+
+
+def transform_labels(DataFrame:pandas.DataFrame)->torch.tensor:
+    tensor = torch.tensor(DataFrame.values)
+    tensor[:,0] = np.log10(np.abs(tensor[:,0]))
+    return tensor
+
+
+def norm(tensor:torch.tensor)->torch.tensor:
+    return torch.nn.functional.normalize(tensor).float()
+    
+    
+def magnitude(vector:np.array)->float:
+    return np.linalg.norm(vector)
 
 
 class Network(nn.Module):
-	def __init__(self):
-		super().__init__()
+    def __init__(self):
+        super().__init__()
 
-		# Inputs to hidden layer linear transformation
-		self.input = nn.Linear(3, 100)
-		self.first_hidden = nn.Linear(100, 100)
-		self.second_hidden = nn.Linear(100, 100)
-		self.third_hidden = nn.Linear(100, 100)
-		self.output = nn.Linear(100, 50)
+        # Inputs to hidden layer linear transformation
+        self.input = nn.Linear(6, 100)
+        self.first_hidden = nn.Linear(100, 50)
+        self.second_hidden = nn.Linear(50, 50)
+        self.third_hidden = nn.Linear(50, 50)
+        self.output = nn.Linear(50, 1)
 
-		self.relu = nn.ReLU()
+        self.relu = nn.ReLU()
 
-	def forward(self, x:[])->[]:
-		# 3 -> 5
-		x = self.input(x)
-		x = self.relu(x)
-		# 5 -> 5
-		x = self.first_hidden(x)
-		x = self.relu(x)
-		# 5 -> 5
-		x = self.second_hidden(x)
-		x = self.relu(x)
-		# 5 -> 5
-		x = self.third_hidden(x)
-		x = self.relu(x)
-		# 5 -> 5
-		x = self.output(x)
+    def forward(self, x:[])->[]:
+        # 3 -> 2
+        x = self.input(x)
+        x = self.relu(x)
+        # 5 -> 5
+        x = self.first_hidden(x)
+        x = self.relu(x)
+        # 5 -> 5
+        x = self.second_hidden(x)
+        x = self.relu(x)
+        # 5 -> 5
+        x = self.third_hidden(x)
+        x = self.relu(x)
+        # 2 -> 2
+        x = self.output(x)
 
-		return x
-
-
-class Dataset():
-	def get_values(path_to_values:str)->torch.Tensor:
-		return torch.Tensor(pandas.read_csv(path_to_values, header=None).values)
+        return x
 
 
-x = Dataset.get_values(features_path)
-Y = 
 
-x = torch.nn.functional.normalize(Dataset.get_values(features_path))
-Y = torch.nn.functional.normalize(Dataset.get_values((labels_path)))
+dataset = pandas.read_csv("DATA_FILES/dataset.csv")
+dataset["Mode"] = dataset["Mode"].astype('category').cat.codes
+dataset = dataset[dataset["Mode"]!=0]
 
-# gratingCouplerNet = Network()
-# optimizer = torch.optim.SGD(gratingCouplerNet.parameters(), lr=0.0001)
-# loss_function = torch.nn.MSELoss()
+training_set = dataset.sample(frac = 0.85)
 
-# for epoch in range(100000):
-# 	prediction = gratingCouplerNet(x)
-# 	loss = loss_function(prediction, Y)
+testing_set = dataset.drop(training_set.index)
 
-# 	optimizer.zero_grad()
-# 	loss.backward()
-# 	optimizer.step()
-# 	print("Epoch: {}, Loss: {:0.6f}".format(epoch, loss))
+# GET THE TRAINING DATA
+X = transform_features(get_features(training_set))
+X_normed = norm(X)
+y = transform_labels(get_labels(training_set))
+
+# GET THE TESTING DATA
+X_test = transform_features(get_features(testing_set))
+X_test_normed = norm(X_test)
+y_test = transform_labels(get_labels(testing_set))
+
+# MODEL AND PARAMETERS
+GratingCouplerNet = Network()
+optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=0.0001)
+loss_function = torch.nn.MSELoss()
+
+# INITLIAZE EPOCH AND LOSSES
+epoch = 0
+loss = 100
+validation_loss = 100
+
+# MODEL AND PARAMETERS
+GratingCouplerNet = Network()
+optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=0.0001)
+loss_function = torch.nn.MSELoss()
+
+# INITLIAZE EPOCH AND LOSSES
+epoch = 0
+
+loss = 100
+validation_loss = 100
+
+# Train GratingCouplerNet
+while validation_loss > 0.25:
+    prediction = GratingCouplerNet(X_normed)
+    loss = loss_function(prediction, y.float())
+    test_prediction = GratingCouplerNet(X_test_normed)
+    validation_loss = loss_function(test_prediction, y_test.float())
+    
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    epoch += 1
+    print("Epoch: {}, Training Loss: {:0.6f}, Validation Loss: {:0.6f}".format(epoch, loss, validation_loss))
 
 
-# print(gratingCouplerNet(x[0]))
-# print(Y[0])
-# print(loss_function(gratingCouplerNet(x[0]), Y[0]))
-
-# grating_coupler = Network()
-# print(grating_coupler)
-# x = torch.tensor([0.0629*pow(10, -6), 0.0629*pow(10, -6), 0.0629*pow(10, -6)])
-# print(x)
-
-# print(grating_coupler(x))
-
-
+# Save the model
+torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
