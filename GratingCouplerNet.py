@@ -86,7 +86,6 @@ class Network(nn.Module):
         return x
 
 
-
 dataset = pandas.read_csv("DATA_FILES/dataset.csv")
 dataset["Mode"] = dataset["Mode"].astype('category').cat.codes
 dataset = dataset[dataset["Mode"]!=0]
@@ -127,7 +126,7 @@ loss = 100
 validation_loss = 100
 
 # Train GratingCouplerNet
-while validation_loss > 0.25:
+while validation_loss > 0.8:
     prediction = GratingCouplerNet(X_normed)
     loss = loss_function(prediction, y.float())
     test_prediction = GratingCouplerNet(X_test_normed)
