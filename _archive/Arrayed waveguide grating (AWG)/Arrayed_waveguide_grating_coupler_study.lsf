@@ -1,0 +1,59 @@
+######################################################################
+# Copyright (c) 2018 Lumerical Inc.
+######################################################################
+
+
+# extract the field as a function of angle
+f = getdata("monitor_1","f");
+E = sqrt(farfield2d("monitor_1",1:length(f),101));
+theta = farfieldangle("monitor_1",1,101)*pi/180;
+neff_slab = 2.85304; # extracted in AWG_slab_study
+
+#######################################################
+# get the near field using farfield exact
+# compare reconstructed result in the near field
+x = 15e-6; # distance from waist
+y = linspace(-100e-6,100e-6,5000);
+fpoint = 3; # 3rd of 5 data points
+lambda = c/f(fpoint);
+distance = sqrt(y^2+x^2);
+theta0 = atan2(y,x);
+E_sim = farfieldexact2d("monitor_1",x,y,fpoint);
+# reproduce the magnitude of the field times the phase, using the phase of Ey for simplicity
+E_sim = pinch(sqrt(sum(abs(E_sim)^2,3))*exp(1i*angle(pinch(E_sim,3,2))));
+
+
+# interpolate the projected E field for comparison.
+# use phase of k*r, and field decrease as 1/sqrt(distance)
+Etest = interp(E,theta,f,theta0,c/lambda)/sqrt(distance)*exp(1i*2*pi/lambda*neff_slab*distance);
+
+# plot comparisons
+plot(y*1e6,abs(E_sim),abs(Etest),"y (microns)","|E|");
+legend("simulated, using farfieldexact","from rapid projection of E(theta)");
+theta1 = unwrap(angle(E_sim));
+theta2 = unwrap(angle(Etest));
+pos = find(y,0);
+theta1 = theta1 - round(theta1(pos)/(2*pi))*2*pi;
+theta2 = theta2 - round(theta2(pos)/(2*pi))*2*pi;
+plot(y*1e6,theta1,theta2,"y (microns)","angle(E) (radians)");
+legend("simulated, using farfieldexact","from rapid projection of E(theta)");
+
+
+# look at variation with frequency
+plot(theta*180/pi,E,"theta (degrees)","|E|");
+leg = cell(length(f));
+for(i=1:length(f)) {
+    leg{i} = num2str( round(c/f(i)*1e9) ) + " nm";
+}
+legend(leg);
+
+# extract the central frequency point, normalize the data, and prepare strings for INTERCONNECT model
+fpoint = 3;
+E = pinch(E,2,fpoint);
+normfac = integrate(abs(E)^2,1,theta);
+E = E / sqrt(normfac);
+outstring1 = "E = transpose([" + replacestring(num2str(transpose(E)),"	",", ") + "]);";
+outstring2 = "thetaE = transpose([" + replacestring(num2str(transpose(theta)),"	",", ") + "]);";
+
+?"String for interconnect model is: ";
+?outstring1 + endl + outstring2;

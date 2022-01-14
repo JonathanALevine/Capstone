@@ -1,0 +1,34 @@
+close all; clc;  clear all; %initialization
+
+% Get the losses from file
+table2 = readtable('losses_mse_069_lr_wd.csv');
+
+% training loss
+% First model
+training_loss_on = table2.training_loss;
+
+% first model testing loss
+first_testing_loss = table1.validation_loss;
+
+% Second model
+second_model_testing_loss = table2.validation_loss;
+
+figure('Name', 'Plot of Losses');
+plot(first_model_training_loss)
+xlim([70 10000])
+hold on;
+plot(first_testing_loss)
+plot(second_model_training_loss);
+plot(second_model_testing_loss);
+hold off;
+grid on;
+xlabel('Epoch', 'FontSize', 16);
+ylabel('MSE Error', 'FontSize', 16);
+legend('Training Loss', 'Testing Loss');
+
+FN2 = 'Plot of Losses';   
+print(gcf, '-dpng', '-r600', FN2);  %Save graph in PNG
+
+
+
+
