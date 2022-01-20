@@ -2,6 +2,8 @@ import torch
 from torch import nn
 import numpy as np
 import pandas
+import time
+from torch.utils.data import Dataset, DataLoader
 
 
 features_path = "features.csv"
@@ -11,40 +13,30 @@ new_dataset = "output_frame.csv"
 
 
 def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
-        return dataframe[["Fill Factor", "Pitch", "Duty Cycle", "Theta", "Lambda", "Mode"]]
+        return dataframe[["Fill Factor", "Pitch", "Duty Cycle", "Theta", "Lambda", "Mode"]].values
 
 
 def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
-        return dataframe[['Transmission']]
-        
-
-def transform_features(DataFrame:pandas.DataFrame)->torch.tensor:
-        tensor = torch.tensor(DataFrame.values)
-        tensor[:,0:5] = np.log10(tensor[:,0:5])
-        return tensor
+        return dataframe[['Transmission']].values
 
 
-def transform_labels(DataFrame:pandas.DataFrame)->torch.tensor:
-        tensor = torch.tensor(DataFrame.values)
-        tensor[:,0] = np.log10(np.abs(tensor[:,0]))
-        return tensor
+def transform_labels(values):
+    return np.log10(np.abs(values))
 
 
-def norm(tensor:torch.tensor)->torch.tensor:
-        return torch.nn.functional.normalize(tensor).float()
+class GratingCouplerDataset(torch.utils.data.Dataset):
+    def __init__(self, x, y):
+        self.x = torch.tensor(x, dtype=torch.float32)
+        self.y = torch.tensor(y, dtype=torch.float32)
+        self.length = self.x.shape[0]
         
         
-def magnitude(vector:np.array)->float:
-        return np.linalg.norm(vector)
-
-
-def get_progress(first_num:float, second_num:float)->float:
-    return (first_num - second_num)*100
-
-
-def check_progress(first_num, second_num)->bool:
-    if get_progress(first_num, second_num) < 2:
-        return True
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+    
+    
+    def __len__(self):
+        return self.length   
 
 
 class Network(nn.Module):
@@ -52,16 +44,14 @@ class Network(nn.Module):
                 super().__init__()
 
                 # Layer sizes
-                self.input = nn.Linear(6, 50)
-                self.first_hidden = nn.Linear(50, 100)
-                self.second_hidden = nn.Linear(100, 200)
-                self.third_hidden = nn.Linear(200, 200)
-                self.fourth_hidden = nn.Linear(200, 100)
+                self.input = nn.Linear(6, 100)
+                self.first_hidden = nn.Linear(100, 150)
+                self.second_hidden = nn.Linear(150, 150)
+                self.third_hidden = nn.Linear(150, 100)
                 self.output = nn.Linear(100, 1)
 
                 # Activation functions
                 self.relu = nn.ReLU()
-                self.celu = nn.CELU()
 
         def forward(self, x:[])->[]:
                 x = self.input(x)
@@ -72,28 +62,29 @@ class Network(nn.Module):
                 x = self.relu(x)
                 x = self.third_hidden(x)
                 x = self.relu(x)
-                x = self.fourth_hidden(x)
-                x = self.relu(x)
                 x = self.output(x)
 
                 return x
 
 
-# Get the training data
-training_set = pandas.read_csv('DATA_FILES/training_set.csv')
+# Get the start time
+start_time = time.time()
 
-# Get the testing data
-testing_set = pandas.read_csv('DATA_FILES/testing_set.csv')
+# Load the dataset from saved CSV
+training_set = pandas.read_csv('DATA_FILES/training_set_normalized.csv')
+testing_set = pandas.read_csv('DATA_FILES/testing_set_normalized.csv')
 
-# GET THE TRAINING DATA
-X = transform_features(get_features(training_set))
-X_normed = norm(X)
+# TRAINING SET
+# Get the x, y values
+x = get_features(training_set)
 y = transform_labels(get_labels(training_set))
+Dataset = GratingCouplerDataset(x, y)
+dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 
-# GET THE TESTING DATA
-X_test = transform_features(get_features(testing_set))
-X_test_normed = norm(X_test)
-y_test = transform_labels(get_labels(testing_set))
+# TESTING SET
+# Get the x, y values
+x_test = torch.tensor(get_features(testing_set), dtype=torch.float32)
+y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.float32)
 
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network()
@@ -107,50 +98,60 @@ epoch = 0
 max_epoch = 10000
 
 # Training loss
-loss = 100
+loss = 1000
 
 # Valdiation loss
 validation_loss = 100
 
 training_losses = []
-validation_losses = []
+testing_losses = []
 
 # Train GratingCouplerNet
-for epoch in range(max_epoch):
+for epoch in range(max_epoch):    
+    for i, (x_train, y_train) in enumerate(dataloader):
+        test_prediction = GratingCouplerNet(x_test)
 
-    # Evaluate the test MSE loss from the Test set
-    test_prediction = GratingCouplerNet(X_test_normed)
-    validation_loss = loss_function(test_prediction, y_test.float())
-    
-    # Zero the gradients in the Network
-    optimizer.zero_grad()
+        # Evaluate the training MSE loss from the Training set
+        prediction = GratingCouplerNet(x_train)
+        loss = loss_function(prediction, y_train.reshape(-1, 1))
 
-    # Evaluate the training MSE loss from the Training set
-    prediction = GratingCouplerNet(X_normed)
-    loss = loss_function(prediction, y.float())
+        # EVALUATE THE TESTING LOSS FROM THE TESTING SET
+        testing_loss = loss_function(test_prediction, y_test.reshape(-1, 1))
 
-    # Update the weights and step the optimizer
-    loss.backward()
-    optimizer.step()
+        # Zero the gradients in the Network
+        optimizer.zero_grad()
 
-    print("Epoch: {}, "\
-          "lr: {}, "\
-          "wd: {}, "\
+        # Update the weights and step the optimizer
+        loss.backward()
+        optimizer.step()
+
+        print("Batch: {}, Training Loss: {:0.6f}, Testing Loss: {:0.6f}".format(i, loss, testing_loss))
+
+    print("\nEpoch/Time: {}/{:0.6f}, "\
+          "lr: {:0.8f}, "\
+          "wd: {:0.8f}, "\
           "Training Loss: {:0.6f}, "\
-          "Validation Loss: {:0.6f}".format(epoch, learning_rate, weight_decay, loss, validation_loss))
+          "Testing Loss: {:0.6f}\n".format(epoch, (time.time()-start_time)/60, learning_rate, weight_decay, loss, testing_loss))
 
     # Appennd training and validation losses to lists 
     training_losses.append(loss.detach().numpy())
-    validation_losses.append(validation_loss.detach().numpy())
+    testing_losses.append(testing_loss.detach().numpy())
 
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_nn_50_100_200_100_1')
+    torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
 
     # Save the losses to a dataframe and csv file
-    d = {'training_loss': training_losses, 'validation_loss': validation_losses}
+    d = {'training_loss': training_losses, 'testing_loss': testing_losses}
     dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('losses_nn_50_100_200_100_1.csv')
+    dataframe.to_csv('training_losses.csv')
 
-    if validation_loss < 0.25:
+    if testing_loss < 0.05:
         break
+
+    if (epoch > 0) and (epoch%1000 == 0):
+        learning_rate = learning_rate/2
+        optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+print("Execution time: {}".format(time.time() - start_time))
+
