@@ -24,6 +24,14 @@ def transform_labels(values):
     return np.log10(np.abs(values))
 
 
+def percent_error(array1, array2)->float:
+    return 0
+
+
+def loss_function(labels, target)->float:
+    return 0
+
+
 class GratingCouplerDataset(torch.utils.data.Dataset):
     def __init__(self, x, y):
         self.x = torch.tensor(x, dtype=torch.float32)
@@ -71,27 +79,33 @@ class Network(nn.Module):
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = pandas.read_csv('DATA_FILES/training_set_normalized.csv')
-testing_set = pandas.read_csv('DATA_FILES/testing_set_normalized.csv')
+training_set = pandas.read_csv('DATA_FILES/larger_training_set_normalized.csv')
+testing_set = pandas.read_csv('DATA_FILES/larger_testing_set_normalized.csv')
 
 # TRAINING SET
 # Get the x, y values
 x = get_features(training_set)
 y = transform_labels(get_labels(training_set))
-Dataset = GratingCouplerDataset(x, y)
-dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 
 # TESTING SET
 # Get the x, y values
 x_test = torch.tensor(get_features(testing_set), dtype=torch.float32)
 y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.float32)
 
+# Dataloader
+Dataset = GratingCouplerDataset(x, y)
+dataloader = DataLoader(dataset = Dataset, batch_size=10000)
+
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network()
-learning_rate = 0.0001
+learning_rate = 0.001
 weight_decay = 0.0005
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
 loss_function = torch.nn.MSELoss()
+
+# Learning rate scehduler
+# decayRate = 0.96
+# learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=decayRate)
 
 # INITLIAZE EPOCH AND LOSSES
 epoch = 0
@@ -127,11 +141,31 @@ for epoch in range(max_epoch):
 
         print("Batch: {}, Training Loss: {:0.6f}, Testing Loss: {:0.6f}".format(i, loss, testing_loss))
 
+
+    # Step the learning rate scheduler
+    # learning_rate_scheduler.step()
+
+    # print("\nEpoch/Time: {}/{:0.6f}, "\
+    #       "lr: {:0.8f}, "\
+    #       "wd: {:0.8f}, "\
+    #       "Training Loss: {:0.6f}, "\
+    #       "Testing Loss: {:0.6f}\n".format(epoch, 
+    #                                       (time.time()-start_time)/60, 
+    #                                        learning_rate_scheduler.get_last_lr()[0], 
+    #                                        weight_decay, 
+    #                                        loss, 
+    #                                        testing_loss))
+
     print("\nEpoch/Time: {}/{:0.6f}, "\
           "lr: {:0.8f}, "\
           "wd: {:0.8f}, "\
           "Training Loss: {:0.6f}, "\
-          "Testing Loss: {:0.6f}\n".format(epoch, (time.time()-start_time)/60, learning_rate, weight_decay, loss, testing_loss))
+          "Testing Loss: {:0.6f}\n".format(epoch, 
+                                          (time.time()-start_time)/60, 
+                                           learning_rate, 
+                                           weight_decay, 
+                                           loss, 
+                                           testing_loss))
 
     # Appennd training and validation losses to lists 
     training_losses.append(loss.detach().numpy())
@@ -139,19 +173,15 @@ for epoch in range(max_epoch):
 
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
+    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_exponential_learning_rate_decay')
 
     # Save the losses to a dataframe and csv file
     d = {'training_loss': training_losses, 'testing_loss': testing_losses}
     dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('training_losses.csv')
+    dataframe.to_csv('training_losses_exponential_learning_rate_decay.csv')
 
     if testing_loss < 0.05:
         break
-
-    if (epoch > 0) and (epoch%1000 == 0):
-        learning_rate = learning_rate/2
-        optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
 print("Execution time: {}".format(time.time() - start_time))
 
