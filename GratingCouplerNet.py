@@ -53,13 +53,15 @@ class Network(nn.Module):
 
                 # Layer sizes
                 self.input = nn.Linear(6, 100)
-                self.first_hidden = nn.Linear(100, 150)
-                self.second_hidden = nn.Linear(150, 150)
-                self.third_hidden = nn.Linear(150, 100)
-                self.output = nn.Linear(100, 1)
+                self.first_hidden = nn.Linear(100, 250)
+                self.second_hidden = nn.Linear(250, 250)
+                self.third_hidden = nn.Linear(250, 100)
+                self.fourth_hidden = nn.Linear(100, 50)
+                self.output = nn.Linear(50, 1)
 
                 # Activation functions
                 self.relu = nn.ReLU()
+                self.sigmoid = nn.Sigmoid()
 
         def forward(self, x:[])->[]:
                 x = self.input(x)
@@ -70,17 +72,37 @@ class Network(nn.Module):
                 x = self.relu(x)
                 x = self.third_hidden(x)
                 x = self.relu(x)
+                x = self.fourth_hidden(x)
+                x = self.relu(x)
                 x = self.output(x)
 
                 return x
+
+
+class RMSLELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, pred, actual):
+        return torch.sqrt(self.mse(torch.log(pred+1), torch.log(actual+1)))
+
+
+class MSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, pred, actual):
+        return self.mse(pred, actual)
 
 
 # Get the start time
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = pandas.read_csv('DATA_FILES/larger_training_set_normalized.csv')
-testing_set = pandas.read_csv('DATA_FILES/larger_testing_set_normalized.csv')
+training_set = pandas.read_csv('DATA_FILES/training_set_normalized_2.csv')
+testing_set = pandas.read_csv('DATA_FILES/testing_set_normalized_2.csv')
 
 # TRAINING SET
 # Get the x, y values
@@ -97,11 +119,13 @@ Dataset = GratingCouplerDataset(x, y)
 dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 
 # MODEL AND PARAMETERS
-GratingCouplerNet = Network()
-learning_rate = 0.001
+GratingCouplerNet = torch.load('GratingCouplerNetModel')
+GratingCouplerNet.eval()
+
+learning_rate = 0.00001
 weight_decay = 0.0005
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
-loss_function = torch.nn.MSELoss()
+loss_function = MSELoss()
 
 # Learning rate scehduler
 # decayRate = 0.96
@@ -173,12 +197,12 @@ for epoch in range(max_epoch):
 
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_exponential_learning_rate_decay')
+    torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
 
-    # Save the losses to a dataframe and csv file
-    d = {'training_loss': training_losses, 'testing_loss': testing_losses}
-    dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('training_losses_exponential_learning_rate_decay.csv')
+    # # Save the losses to a dataframe and csv file
+    # d = {'training_loss': training_losses, 'testing_loss': testing_losses}
+    # dataframe = pandas.DataFrame(data=d)
+    # dataframe.to_csv('training_losses_exponential_learning_rate_decay.csv')
 
     if testing_loss < 0.05:
         break
