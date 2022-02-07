@@ -1,3 +1,4 @@
+
 classdef Mind < handle
     properties
         data

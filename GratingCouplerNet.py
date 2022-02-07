@@ -53,11 +53,15 @@ class Network(nn.Module):
 
                 # Layer sizes
                 self.input = nn.Linear(6, 100)
-                self.first_hidden = nn.Linear(100, 250)
-                self.second_hidden = nn.Linear(250, 250)
-                self.third_hidden = nn.Linear(250, 100)
-                self.fourth_hidden = nn.Linear(100, 50)
-                self.output = nn.Linear(50, 1)
+                self.first_hidden = nn.Linear(100, 200)
+                self.second_hidden = nn.Linear(200, 200)
+                self.third_hidden = nn.Linear(200, 200)
+                self.fourth_hidden = nn.Linear(200, 200)
+                self.fifth_hidden = nn.Linear(200, 200)
+                self.sixth_hidden = nn.Linear(200, 100)
+                # self.seventh_hidden = nn.Linear(500, 250)
+                # self.eighth_hidden = nn.Linear(250, 100)
+                self.output = nn.Linear(100, 1)
 
                 # Activation functions
                 self.relu = nn.ReLU()
@@ -74,6 +78,14 @@ class Network(nn.Module):
                 x = self.relu(x)
                 x = self.fourth_hidden(x)
                 x = self.relu(x)
+                x = self.fifth_hidden(x)
+                x = self.relu(x)
+                x = self.sixth_hidden(x)
+                x = self.relu(x)
+                # x = self.seventh_hidden(x)
+                # x = self.relu(x)
+                # x = self.eighth_hidden(x)
+                # x = self.relu(x)                
                 x = self.output(x)
 
                 return x
@@ -97,12 +109,20 @@ class MSELoss(nn.Module):
         return self.mse(pred, actual)
 
 
+class mean_absolute_error(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, pred, actual):
+        return torch.mean(torch.abs((pred - actual) / actual))
+
+
 # Get the start time
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = pandas.read_csv('DATA_FILES/training_set_normalized_2.csv')
-testing_set = pandas.read_csv('DATA_FILES/testing_set_normalized_2.csv')
+training_set = pandas.read_csv('training_set.csv')
+testing_set = pandas.read_csv('testing_set.csv')
 
 # TRAINING SET
 # Get the x, y values
@@ -119,17 +139,17 @@ Dataset = GratingCouplerDataset(x, y)
 dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 
 # MODEL AND PARAMETERS
-GratingCouplerNet = torch.load('GratingCouplerNetModel')
-GratingCouplerNet.eval()
+GratingCouplerNet = torch.load('GratingCouplerNetModel').eval()
 
-learning_rate = 0.00001
-weight_decay = 0.0005
+learning_rate = 0.00005
+weight_decay = 0.00005
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
-loss_function = MSELoss()
+mae_loss = mean_absolute_error()
+mse_loss = MSELoss()
 
 # Learning rate scehduler
-# decayRate = 0.96
-# learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=decayRate)
+decayRate = 0.999
+learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=decayRate)
 
 # INITLIAZE EPOCH AND LOSSES
 epoch = 0
@@ -151,23 +171,31 @@ for epoch in range(max_epoch):
 
         # Evaluate the training MSE loss from the Training set
         prediction = GratingCouplerNet(x_train)
-        loss = loss_function(prediction, y_train.reshape(-1, 1))
+        
+        training_mae_error = mae_loss(prediction, y_train.reshape(-1, 1))
+        training_mse_error = mse_loss(prediction, y_train.reshape(-1, 1))
 
         # EVALUATE THE TESTING LOSS FROM THE TESTING SET
-        testing_loss = loss_function(test_prediction, y_test.reshape(-1, 1))
+        testing_mae_error = mae_loss(test_prediction, y_test.reshape(-1, 1))
+        testing_mse_error = mse_loss(prediction, y_train.reshape(-1, 1))
+
 
         # Zero the gradients in the Network
         optimizer.zero_grad()
 
         # Update the weights and step the optimizer
-        loss.backward()
+        training_mae_error.backward()
         optimizer.step()
 
-        print("Batch: {}, Training Loss: {:0.6f}, Testing Loss: {:0.6f}".format(i, loss, testing_loss))
+        print("Batch: {},"\
+              " Training Loss (PE): {:0.6f},"\
+              " Testing Loss (PE): {:0.6f},"\
+              " Training Loss (MSE): {:0.6f},"\
+              " Testing Loss (MSE): {:0.6f}".format(i, training_mae_error, testing_mae_error, training_mse_error, testing_mse_error))
 
 
     # Step the learning rate scheduler
-    # learning_rate_scheduler.step()
+    learning_rate_scheduler.step()
 
     # print("\nEpoch/Time: {}/{:0.6f}, "\
     #       "lr: {:0.8f}, "\
@@ -186,14 +214,14 @@ for epoch in range(max_epoch):
           "Training Loss: {:0.6f}, "\
           "Testing Loss: {:0.6f}\n".format(epoch, 
                                           (time.time()-start_time)/60, 
-                                           learning_rate, 
+                                           learning_rate_scheduler.get_last_lr()[0], 
                                            weight_decay, 
-                                           loss, 
-                                           testing_loss))
+                                           training_mse_error, 
+                                           testing_mse_error))
 
-    # Appennd training and validation losses to lists 
-    training_losses.append(loss.detach().numpy())
-    testing_losses.append(testing_loss.detach().numpy())
+    # # Append training and validation losses to lists 
+    # training_losses.append(loss.detach().numpy())
+    # testing_losses.append(testing_loss.detach().numpy())
 
 
     # Save the model
@@ -204,7 +232,7 @@ for epoch in range(max_epoch):
     # dataframe = pandas.DataFrame(data=d)
     # dataframe.to_csv('training_losses_exponential_learning_rate_decay.csv')
 
-    if testing_loss < 0.05:
+    if testing_mae_error < 0.01:
         break
 
 print("Execution time: {}".format(time.time() - start_time))
