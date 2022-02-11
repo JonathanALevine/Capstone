@@ -6,18 +6,12 @@ import time
 from torch.utils.data import Dataset, DataLoader
 
 
-features_path = "features.csv"
-labels_path = "labels.csv"
-dataset_path = "data.csv"
-new_dataset = "output_frame.csv"
-
-
 def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
-        return dataframe[["Fill Factor", "Pitch", "Duty Cycle", "Theta", "Lambda", "Mode"]].values
+        return dataframe[["Fill Factor", "Pitch", "Duty Cycle", "Theta", "Mode"]].values
 
 
 def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
-        return dataframe[['Transmission']].values
+        return dataframe[['Lambda', 'Transmission']].values
 
 
 def transform_labels(values):
@@ -52,16 +46,16 @@ class Network(nn.Module):
                 super().__init__()
 
                 # Layer sizes
-                self.input = nn.Linear(6, 50)
-                self.first_hidden = nn.Linear(50, 100)
-                self.second_hidden = nn.Linear(100, 250)
-                self.third_hidden = nn.Linear(250, 500)
-                self.fourth_hidden = nn.Linear(500, 1000)
-                self.fifth_hidden = nn.Linear(1000, 500)
-                self.sixth_hidden = nn.Linear(500, 250)
-                self.seventh_hidden = nn.Linear(250, 100)
-                self.eighth_hidden = nn.Linear(100, 50)
-                self.output = nn.Linear(50, 1)
+                self.input = nn.Linear(5, 50)
+                self.first_hidden = nn.Linear(50, 50)
+                self.second_hidden = nn.Linear(50, 50)
+                self.third_hidden = nn.Linear(50, 50)
+                # self.fourth_hidden = nn.Linear(500, 1000)
+                # self.fifth_hidden = nn.Linear(1000, 500)
+                # self.sixth_hidden = nn.Linear(500, 250)
+                # self.seventh_hidden = nn.Linear(250, 100)
+                # self.eighth_hidden = nn.Linear(100, 50)
+                self.output = nn.Linear(50, 2)
 
                 # Activation functions
                 self.relu = nn.ReLU()
@@ -76,16 +70,16 @@ class Network(nn.Module):
                 x = self.relu(x)
                 x = self.third_hidden(x)
                 x = self.relu(x)
-                x = self.fourth_hidden(x)
-                x = self.relu(x)
-                x = self.fifth_hidden(x)
-                x = self.relu(x)
-                x = self.sixth_hidden(x)
-                x = self.relu(x)
-                x = self.seventh_hidden(x)
-                x = self.relu(x)
-                x = self.eighth_hidden(x)
-                x = self.relu(x)                
+                # x = self.fourth_hidden(x)
+                # x = self.relu(x)
+                # x = self.fifth_hidden(x)
+                # x = self.relu(x)
+                # x = self.sixth_hidden(x)
+                # x = self.relu(x)
+                # x = self.seventh_hidden(x)
+                # x = self.relu(x)
+                # x = self.eighth_hidden(x)
+                # x = self.relu(x)                
                 x = self.output(x)
 
                 return x
@@ -121,28 +115,28 @@ class mean_absolute_error(nn.Module):
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = pandas.read_csv('DATA_FILES/training_set_normalized_2.csv')
-testing_set = pandas.read_csv('DATA_FILES/testing_set_normalized_2.csv')
+training_set = pandas.read_csv('DATA_FILES/training_set_07Feb2022.csv')
+testing_set = pandas.read_csv('DATA_FILES/testing_set_07Feb2022.csv')
 
 # TRAINING SET
 # Get the x, y values
 x = get_features(training_set)
-y = transform_labels(get_labels(training_set))
+y = get_labels(training_set)
 
 # TESTING SET
 # Get the x, y values
 x_test = torch.tensor(get_features(testing_set), dtype=torch.float32)
-y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.float32)
+y_test = torch.tensor(get_labels(testing_set), dtype=torch.float32)
 
 # Dataloader
 Dataset = GratingCouplerDataset(x, y)
-dataloader = DataLoader(dataset = Dataset, batch_size=10000)
+dataloader = DataLoader(dataset = Dataset, batch_size=100)
 
 # MODEL AND PARAMETERS
-GratingCouplerNet = torch.load('GratingCouplerNetModel').eval()
+GratingCouplerNet = Network()
 
-learning_rate = 0.000010
-weight_decay = 0.00000
+learning_rate = 0.00010
+weight_decay = 0.000005
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
 loss_function = mean_absolute_error()
 
@@ -216,7 +210,7 @@ for epoch in range(max_epoch):
 
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
+    torch.save(GratingCouplerNet, 'NewModel')
 
     # # Save the losses to a dataframe and csv file
     # d = {'training_loss': training_losses, 'testing_loss': testing_losses}
