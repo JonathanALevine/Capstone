@@ -57,11 +57,8 @@ class Network(nn.Module):
                 self.second_hidden = nn.Linear(100, 250)
                 self.third_hidden = nn.Linear(250, 250)
                 self.fourth_hidden = nn.Linear(250, 100)
-                # self.fifth_hidden = nn.Linear(1000, 500)
-                # self.sixth_hidden = nn.Linear(500, 250)
-                # self.seventh_hidden = nn.Linear(250, 100)
-                # self.eighth_hidden = nn.Linear(100, 50)
-                self.output = nn.Linear(100, 2)
+                self.fifth_hidden = nn.Linear(100, 50)
+                self.output = nn.Linear(50, 2)
 
                 # Activation functions
                 self.relu = nn.ReLU()
@@ -78,14 +75,8 @@ class Network(nn.Module):
                 x = self.relu(x)
                 x = self.fourth_hidden(x)
                 x = self.relu(x)
-                # x = self.fifth_hidden(x)
-                # x = self.relu(x)
-                # x = self.sixth_hidden(x)
-                # x = self.relu(x)
-                # x = self.seventh_hidden(x)
-                # x = self.relu(x)
-                # x = self.eighth_hidden(x)
-                # x = self.relu(x)                
+                x = self.fifth_hidden(x)
+                x = self.relu(x)            
                 x = self.output(x)
 
                 return x
@@ -153,7 +144,7 @@ learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optim
 
 # INITLIAZE EPOCH AND LOSSES
 epoch = 0
-max_epoch = 10000
+max_epoch = 20000
 
 # Training loss
 loss = 1000
@@ -163,6 +154,7 @@ validation_loss = 100
 
 training_losses = []
 testing_losses = []
+learning_rates = []
 
 # Train GratingCouplerNet
 for epoch in range(max_epoch):    
@@ -191,7 +183,7 @@ for epoch in range(max_epoch):
 
 
     # Step the learning rate scheduler
-    learning_rate_scheduler.step()
+    # learning_rate_scheduler.step()
 
     # print("\nEpoch/Time: {}/{:0.6f}, "\
     #       "lr: {:0.8f}, "\
@@ -218,13 +210,14 @@ for epoch in range(max_epoch):
     # Append training and validation losses to lists 
     training_losses.append(training_mse_error.detach().numpy())
     testing_losses.append(testing_mse_error.detach().numpy())
+    learning_rates.append(learning_rate_scheduler.get_last_lr()[0])
 
 
     # Save the model
     torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
 
     # Save the losses to a dataframe and csv file
-    d = {'training_loss': training_losses, 'testing_loss': testing_losses}
+    d = {'training_loss': training_losses, 'testing_loss': testing_losses, 'learning_rate': learning_rates}
     dataframe = pandas.DataFrame(data=d)
     dataframe.to_csv('losses.csv')
 
