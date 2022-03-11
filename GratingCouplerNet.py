@@ -13,11 +13,11 @@ new_dataset = "output_frame.csv"
 
 
 def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
-        return dataframe[["Fill Factor", "Pitch", "Duty Cycle", "Theta", "Mode"]].values
+    return dataframe[["Theta", "Pitch", "Duty Cycle", "Fill Factor", "Lambda", "Mode"]].values
 
 
 def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
-        return dataframe[['Lambda', 'Transmission']].values
+    return dataframe[['Transmission']].values
 
 
 def transform_labels(values):
@@ -52,13 +52,13 @@ class Network(nn.Module):
                 super().__init__()
 
                 # Layer sizes
-                self.input = nn.Linear(5, 50)
-                self.first_hidden = nn.Linear(50, 100)
-                self.second_hidden = nn.Linear(100, 250)
-                self.third_hidden = nn.Linear(250, 250)
+                self.input = nn.Linear(6, 100)
+                self.first_hidden = nn.Linear(100, 250)
+                self.second_hidden = nn.Linear(250, 500)
+                self.third_hidden = nn.Linear(500, 250)
                 self.fourth_hidden = nn.Linear(250, 100)
                 self.fifth_hidden = nn.Linear(100, 50)
-                self.output = nn.Linear(50, 2)
+                self.output = nn.Linear(50, 1)
 
                 # Activation functions
                 self.relu = nn.ReLU()
@@ -112,8 +112,8 @@ class mean_absolute_error(nn.Module):
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = pandas.read_csv('DATA_FILES/training_set_07Feb2022.csv')
-testing_set = pandas.read_csv('DATA_FILES/testing_set_07Feb2022.csv')
+training_set = pandas.read_csv('DATA_FILES/training_set.csv')
+testing_set = pandas.read_csv('DATA_FILES/testing_set.csv')
 
 # TRAINING SET
 # Get the x, y values
@@ -127,13 +127,13 @@ y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.flo
 
 # Dataloader
 Dataset = GratingCouplerDataset(x, y)
-dataloader = DataLoader(dataset = Dataset, batch_size=1000)
+dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network()
 
 learning_rate = 0.001
-weight_decay = 0.00005
+weight_decay = 0.00000
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
 mae_loss = mean_absolute_error()
 mse_loss = MSELoss()
@@ -144,13 +144,13 @@ learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optim
 
 # INITLIAZE EPOCH AND LOSSES
 epoch = 0
-max_epoch = 20000
+max_epoch = 250
 
 # Training loss
 loss = 1000
 
 # Valdiation loss
-validation_loss = 100
+validation_loss = 1000
 
 training_losses = []
 testing_losses = []
@@ -181,21 +181,9 @@ for epoch in range(max_epoch):
               " Training Loss (MSE): {:0.6f},"\
               " Testing Loss (MSE): {:0.6f}".format(i, training_mse_error, testing_mse_error))
 
-
     # Step the learning rate scheduler
     # learning_rate_scheduler.step()
 
-    # print("\nEpoch/Time: {}/{:0.6f}, "\
-    #       "lr: {:0.8f}, "\
-    #       "wd: {:0.8f}, "\
-    #       "Training Loss: {:0.6f}, "\
-    #       "Testing Loss: {:0.6f}\n".format(epoch, 
-    #                                       (time.time()-start_time)/60, 
-    #                                        learning_rate_scheduler.get_last_lr()[0], 
-    #                                        weight_decay, 
-    #                                        loss, 
-    #                                        testing_loss))
-                                           # learning_rate_scheduler.get_last_lr()[0],
     print("\nEpoch/Time: {}/{:0.6f}, "\
           "lr: {:0.8f}, "\
           "wd: {:0.8f}, "\
@@ -212,14 +200,12 @@ for epoch in range(max_epoch):
     testing_losses.append(testing_mse_error.detach().numpy())
     learning_rates.append(learning_rate_scheduler.get_last_lr()[0])
 
-
     # Save the model
     torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
 
     # Save the losses to a dataframe and csv file
     d = {'training_loss': training_losses, 'testing_loss': testing_losses, 'learning_rate': learning_rates}
     dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('losses.csv')
+    dataframe.to_csv('DATA_FILES/training_stats.csv')
 
 print("Execution time: {}".format(time.time() - start_time))
-
