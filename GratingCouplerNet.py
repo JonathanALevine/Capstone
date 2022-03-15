@@ -201,11 +201,11 @@ for epoch in range(max_epoch):
     learning_rates.append(learning_rate_scheduler.get_last_lr()[0])
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_weight_decay')
+    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_15March2022')
 
     # Save the losses to a dataframe and csv file
     d = {'training_loss': training_losses, 'testing_loss': testing_losses, 'learning_rate': learning_rates}
     dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('DATA_FILES/training_stats_weight_decay.csv')
+    dataframe.to_csv('DATA_FILES/training_stats_15March2022csv')
 
 print("Execution time: {}".format(time.time() - start_time))
