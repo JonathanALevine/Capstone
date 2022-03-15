@@ -133,7 +133,7 @@ dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 GratingCouplerNet = Network()
 
 learning_rate = 0.001
-weight_decay = 0.00000
+weight_decay = 0.0005
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
 mae_loss = mean_absolute_error()
 mse_loss = MSELoss()
@@ -201,11 +201,11 @@ for epoch in range(max_epoch):
     learning_rates.append(learning_rate_scheduler.get_last_lr()[0])
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel')
+    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_weight_decay')
 
     # Save the losses to a dataframe and csv file
     d = {'training_loss': training_losses, 'testing_loss': testing_losses, 'learning_rate': learning_rates}
     dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('DATA_FILES/training_stats.csv')
+    dataframe.to_csv('DATA_FILES/training_stats_weight_decay.csv')
 
 print("Execution time: {}".format(time.time() - start_time))
