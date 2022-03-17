@@ -52,9 +52,9 @@ class Network(nn.Module):
                 super().__init__()
 
                 # Layer sizes
-                self.input = nn.Linear(6, 100)
-                self.first_hidden = nn.Linear(100, 250)
-                self.second_hidden = nn.Linear(250, 500)
+                self.input = nn.Linear(6, 50)
+                self.first_hidden = nn.Linear(50, 100)
+                self.second_hidden = nn.Linear(100, 500)
                 self.third_hidden = nn.Linear(500, 250)
                 self.fourth_hidden = nn.Linear(250, 100)
                 self.fifth_hidden = nn.Linear(100, 50)
@@ -127,13 +127,13 @@ y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.flo
 
 # Dataloader
 Dataset = GratingCouplerDataset(x, y)
-dataloader = DataLoader(dataset = Dataset, batch_size=10000)
+dataloader = DataLoader(dataset = Dataset, batch_size=5000)
 
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network()
 
 learning_rate = 0.001
-weight_decay = 0.0005
+weight_decay = 0.0000
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate, weight_decay=weight_decay)
 mae_loss = mean_absolute_error()
 mse_loss = MSELoss()
@@ -201,11 +201,11 @@ for epoch in range(max_epoch):
     learning_rates.append(learning_rate_scheduler.get_last_lr()[0])
 
     # Save the model
-    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_15March2022')
+    torch.save(GratingCouplerNet, 'GratingCouplerNetModel_17March2022')
 
     # Save the losses to a dataframe and csv file
     d = {'training_loss': training_losses, 'testing_loss': testing_losses, 'learning_rate': learning_rates}
     dataframe = pandas.DataFrame(data=d)
-    dataframe.to_csv('DATA_FILES/training_stats_15March2022csv')
+    dataframe.to_csv('DATA_FILES/training_stats_17March2022.csv')
 
 print("Execution time: {}".format(time.time() - start_time))
