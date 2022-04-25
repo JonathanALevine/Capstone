@@ -1,0 +1,124 @@
+13:35:19 From  Leonard MacEachern  to  Everyone:
+	Jon's opening:
+13:35:55 From  Leonard MacEachern  to  Everyone:
+	You can put Winnie first.
+13:36:52 From  Winnie Ye  to  Everyone:
+	Slide 2: too many words… please clean up
+13:36:58 From  Leonard MacEachern  to  Everyone:
+	slide 2: forgot time of simulation. forgot energy consumption
+13:37:20 From  Leonard MacEachern  to  Everyone:
+	also add software complexity...that's also an issue.
+13:37:29 From  Leonard MacEachern  to  Everyone:
+	My God. Learn his name.
+13:37:45 From  Winnie Ye  to  Everyone:
+	Not about the expensive license. It’s about expensive human and computation resources
+13:38:26 From  Leonard MacEachern  to  Everyone:
+	slide 3: nice figure!! dimensions? How big is that thing?
+13:38:54 From  Winnie Ye  to  Everyone:
+	Say what grating couplers are for first: to couple light an in, essential for any planar Photonic circuits
+13:39:14 From  Leonard MacEachern  to  Everyone:
+	what's a hyperparameter?
+13:39:37 From  Leonard MacEachern  to  Everyone:
+	Pretty good opening.
+13:39:44 From  Leonard MacEachern  to  Everyone:
+	Deng's stuff:
+13:40:15 From  Winnie Ye  to  Everyone:
+	Put Prof MacEachern’s name in one line on title page
+13:41:00 From  Winnie Ye  to  Everyone:
+	Slide 7. Put appropriate indent spacing
+13:42:17 From  Winnie Ye  to  Everyone:
+	Use “Presenter: Deng xxxx” instead of author
+13:42:57 From  Winnie Ye  to  Everyone:
+	Slide 10: why 200?
+13:43:00 From  Leonard MacEachern  to  Everyone:
+	Some figures are cut and paste and blurry. Make your own figures or cite the source. It's best to make your own figures. Otherwise I see it as a low effort presentation.
+13:43:57 From  Leonard MacEachern  to  Everyone:
+	Learning software is not an engineering challenge. This is weak sauce.
+13:44:09 From  Leonard MacEachern  to  Everyone:
+	You need to discuss actual engineering challenges.
+13:44:53 From  Leonard MacEachern  to  Everyone:
+	working around large datasets is an engineering challenge.
+13:46:02 From  Leonard MacEachern  to  Everyone:
+	general comment: you can use the laser pointer to point at things on the screen, but then you need to control your own presentation. This is a better way IMO
+13:46:02 From  Jacob Pender-Ryall  to  Everyone:
+	Will the professors stop the presentation for questions or is it only at the end?
+13:46:23 From  Leonard MacEachern  to  Everyone:
+	@jacob...they will ask questions at the end of each student's time.
+13:47:51 From  Leonard MacEachern  to  Everyone:
+	General comments for Deng: much better this week. You need to discuss the large data set challenge and explain why it happened (crashes). Memory issue?
+13:48:01 From  Leonard MacEachern  to  Everyone:
+	No questions....keep going.
+13:48:23 From  Leonard MacEachern  to  Everyone:
+	Randi's slides:
+13:49:16 From  Leonard MacEachern  to  Everyone:
+	slide 18: great.
+13:51:07 From  Leonard MacEachern  to  Everyone:
+	slide 20: excellent. well done.
+13:51:37 From  Leonard MacEachern  to  Everyone:
+	slide 21: explain where the parameters came from.
+13:52:34 From  Leonard MacEachern  to  Everyone:
+	slide 22: ok....
+13:53:51 From  Leonard MacEachern  to  Everyone:
+	slide 24: doesn't look the same to me.
+13:54:14 From  Winnie Ye  to  Everyone:
+	Slide 23: use the same scale on x and y axis
+13:55:21 From  Leonard MacEachern  to  Everyone:
+	slide 25: same comment about learning software. not an engineering challenge.
+13:56:23 From  Leonard MacEachern  to  Everyone:
+	slide 27: nice. hard to keep up though.
+13:57:41 From  Leonard MacEachern  to  Everyone:
+	slide 29: ok. mention the data is sent to the ANN people in this format.
+13:57:54 From  Winnie Ye  to  Everyone:
+	Everyone: do you know what is TE or TM mode?
+13:58:06 From  Leonard MacEachern  to  Everyone:
+	slide 30....different template for the slide?
+13:58:22 From  Leonard MacEachern  to  Everyone:
+	good job overall.
+13:58:32 From  Leonard MacEachern  to  Everyone:
+	Jon's slides:
+13:59:19 From  Leonard MacEachern  to  Everyone:
+	slide 33: good. LOL at the image. Show your computer!
+14:00:47 From  Winnie Ye  to  Everyone:
+	@group presentation: should include the gantt chart . Your group presentation is way too short
+14:01:13 From  Leonard MacEachern  to  Everyone:
+	slide 34: missing a figure? Why is text squished to the left?
+14:02:15 From  Leonard MacEachern  to  Everyone:
+	slide 35: lots of jargon. Epoch? learning rate? Rogers is going to have fun...
+14:02:52 From  Leonard MacEachern  to  Everyone:
+	slide 36: remember my suggestion to generate an image of the network.....
+14:03:19 From  Leonard MacEachern  to  Everyone:
+	slide 36: (6,50) etc....what does it mean?
+14:03:47 From  Leonard MacEachern  to  Everyone:
+	slide 37: what was your cost function? Training error measured how?
+14:03:55 From  Winnie Ye  to  Everyone:
+	@Jon, add a bit details on how the ANN was set, the activation function and how the layers were related to each other
+14:04:36 From  Leonard MacEachern  to  Everyone:
+	slide 38: this is after removing bad data? Or maybe Jake talks about this later.
+14:05:03 From  Leonard MacEachern  to  Everyone:
+	Slide 39: Why TM prediction is worse?
+14:07:44 From  Leonard MacEachern  to  Everyone:
+	Slide 41: you haven't convinced me you did as much work as I know you did. Show some code. Show Jupyter. Show the ANN structure. Otherwise it's really questionable how much work you did on the project.
+14:07:56 From  Leonard MacEachern  to  Everyone:
+	Jacob's slides:
+14:09:39 From  Leonard MacEachern  to  Everyone:
+	slide 43: good
+14:10:38 From  Leonard MacEachern  to  Everyone:
+	slide 44: code?
+14:12:50 From  Leonard MacEachern  to  Everyone:
+	slide 47: complete the slide.
+14:13:14 From  Winnie Ye  to  Everyone:
+	@Jacob, your legend is way too small to read
+14:13:15 From  Leonard MacEachern  to  Everyone:
+	slide 49-50: no idea what you mean by nodes....what nodes? where?
+14:13:39 From  Leonard MacEachern  to  Everyone:
+	slide 51: good concept.
+14:16:36 From  Leonard MacEachern  to  Everyone:
+	slide 55: it's not noise. it's just unrealistic data based on unrealistic parameters.
+14:18:58 From  Leonard MacEachern  to  Everyone:
+	slide 56: no idea what's going on. Explain it to Rogers.
+14:19:05 From  Leonard MacEachern  to  Everyone:
+	slide 57: ?
+14:19:17 From  Leonard MacEachern  to  Everyone:
+	slide 58: ?
+14:19:54 From  Leonard MacEachern  to  Everyone:
+	needs to be completed. need practice!

@@ -2,7 +2,7 @@ switchtolayout;
 
 num = 5;
 
-theta_vals = linspace(5, 20, num);
+theta_vals = linspace(10, 20, num);
 pitch_vals = linspace(0.5e-6, 1.5e-6, num);
 duty_cycle_vals = linspace(0.4, 0.8, num);
 fill_factor_values = linspace(0.2, 0.6, num);
