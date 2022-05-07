@@ -13,6 +13,7 @@ else:
 
 
 device = torch.device(dev)
+print("Hello World!")
 
 
 def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
