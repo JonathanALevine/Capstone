@@ -1,0 +1,50 @@
+switchtolayout;
+
+num = 5;
+
+theta_vals = linspace(10, 20, num);
+pitch_vals = linspace(0.5e-6, 1.5e-6, num);
+duty_cycle_vals = linspace(0.4, 0.8, num);
+fill_factor_values = linspace(0.2, 0.6, num);
+
+current_time = now;
+
+for(i=1:num){
+    for(j= 1:num){
+        for(k = 1:num){
+            for(z = 1:num){
+            	switchtolayout;
+                select("fiber");
+                set("theta0", theta_vals(i));
+                select("gc");
+                set("pitch", pitch_vals(j));
+                set("duty cycle", duty_cycle_vals(k));
+                set("fill_little", fill_factor_values(z));
+                select("FDTD::ports");
+                set("source mode", "mode 1");
+                run;
+                a = getresult("FDTD::ports::port 3", "T");
+                switchtolayout;
+                select("FDTD::ports");
+                set("source mode", "mode 2");
+                run;
+                b = getresult("FDTD::ports::port 2", "T");
+                # Write to file
+                string = num2str(theta_vals(i)) + ", "; 
+                string = string + num2str(pitch_vals(j)) + ", "; 
+                string = string + num2str(duty_cycle_vals(k)) + ", ";
+                string = string + num2str(fill_factor_values(z)) + "\n";
+                for(number = 1:size(a.T, 1)){
+                	string = string + "(" + num2str(a.lambda(number, 1)) + ", " +  num2str(a.T(number, 1)) + "), ";
+                }
+                string = string + "\n";
+                for(number = 1:size(b.T, 1)){
+                	string = string + "(" + num2str(b.lambda(number, 1)) + ", " + num2str(b.T(number, 1)) + "), ";
+                }
+                string = string + "\n";
+                filename = "Results_" + num2str(current_time) + ".txt";
+                write(filename, string, "append");
+            }
+        }
+    }
+}
