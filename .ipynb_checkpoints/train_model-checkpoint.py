@@ -9,7 +9,7 @@ import pickle
 import _pickle as cPickle
 
 # Better accuracy is needed!
-# torch.backends.cuda.matmul.allow_tf32 = False
+torch.backends.cuda.matmul.allow_tf32 = False
 
 
 # Use the GPU for training
@@ -127,7 +127,7 @@ y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.flo
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network().to(device)
 
-learning_rate = 0.0001
+learning_rate = 0.001
 weight_decay = 0
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate)
 
@@ -143,6 +143,12 @@ max_epoch = 500
 
 # Training loss
 loss = 1000
+
+training_losses_mse = []
+testing_losses_mse = []
+training_losses_mae = []
+testing_losses_mae = []
+learning_rates = []
 
 # Train GratingCouplerNet
 for epoch in range(max_epoch):
