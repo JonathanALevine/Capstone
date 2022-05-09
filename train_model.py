@@ -30,7 +30,7 @@ def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
 
 
 def transform_labels(values):
-    return 1/np.log10(np.abs(values))
+    return -1/np.log10(np.abs(values))
 
 
 # Pickle a file and then compress it into a file with extension 
@@ -48,8 +48,8 @@ def decompress_pickle(file):
 
 class GratingCouplerDataset(torch.utils.data.Dataset):
     def __init__(self, x, y):
-        self.x = torch.tensor(x, dtype=torch.float32)
-        self.y = torch.tensor(y, dtype=torch.float32)
+        self.x = x.clone().detach()
+        self.y = y.clone().detach()
         self.length = self.x.shape[0]
         
         
@@ -108,21 +108,25 @@ class MSELoss(nn.Module):
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = decompress_pickle('datasets/training_set_normalized_features.pbz2')
+training_set = decompress_pickle('datasets/training_set_normalized.pbz2')
 training_set = training_set.sample(frac=1)
 
-testing_set = decompress_pickle('datasets/testing_set_normalized_features.pbz2')
+testing_set = decompress_pickle('datasets/testing_set_normalized.pbz2')
 testing_set = testing_set.sample(frac=1)
 
 # TRAINING SET
 # Get the x, y values
-x_train = torch.tensor(get_features(training_set), dtype=torch.float32).to(device)
-y_train = torch.tensor(transform_labels(get_labels(training_set)), dtype=torch.float32).to(device)
+x = torch.tensor(get_features(training_set), dtype=torch.float32).to(device)
+y = torch.tensor(get_labels(training_set), dtype=torch.float32).to(device)
 
 # TESTING SET
 # Get the x, y values
 x_test = torch.tensor(get_features(testing_set), dtype=torch.float32).to(device)
-y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.float32).to(device)
+y_test = torch.tensor(get_labels(testing_set), dtype=torch.float32).to(device)
+
+# Dataloader
+Dataset = GratingCouplerDataset(x, y)
+dataloader = DataLoader(dataset = Dataset, batch_size=10000)
 
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network().to(device)
@@ -139,28 +143,33 @@ learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optim
 
 # INITLIAZE EPOCH AND LOSSES
 epoch = 0
-max_epoch = 500
+max_epoch = 250
 
 # Training loss
 loss = 1000
 
 # Train GratingCouplerNet
 for epoch in range(max_epoch):
-    test_prediction = GratingCouplerNet(x_test)
+    for i, (x_train, y_train) in enumerate(dataloader):
+        test_prediction = GratingCouplerNet(x_test)
 
-    # EVALUATE THE TRAINING LOSS
-    prediction = GratingCouplerNet(x_train)
-    training_mse_error = mse_loss(prediction, y_train)
+        # EVALUATE THE TRAINING LOSS
+        prediction = GratingCouplerNet(x_train)
+        training_mse_error = mse_loss(prediction, y_train)
 
-    # EVALUATE THE TESTING LOSS
-    testing_mse_error = mse_loss(test_prediction, y_test)
+        # EVALUATE THE TESTING LOSS
+        testing_mse_error = mse_loss(test_prediction, y_test)
 
-    # ZERO THE GRADIENTS IN THE NETWORK
-    optimizer.zero_grad()
+        # ZERO THE GRADIENTS IN THE NETWORK
+        optimizer.zero_grad()
 
-    # UPDATE THE WEIGHTS AND STEP THE OPTIMIZER
-    training_mse_error.backward()
-    optimizer.step()
+        # UPDATE THE WEIGHTS AND STEP THE OPTIMIZER
+        training_mse_error.backward()
+        optimizer.step()
+
+        print("Batch: {},"\
+              " Training Loss (MSE): {:0.6f},"\
+              " Testing Loss (MSE): {:0.6f}".format(i, training_mse_error, testing_mse_error))
 
     print("\nEpoch/Time: {}/{:0.6f}, "\
       "lr: {:0.8f}, "\
