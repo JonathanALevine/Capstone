@@ -30,7 +30,7 @@ def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
 
 
 def transform_labels(values):
-    return 1/np.log10(np.abs(values))
+    return -1/np.log10(np.abs(values))
 
 
 # Pickle a file and then compress it into a file with extension 
@@ -126,12 +126,12 @@ y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.flo
 
 # Dataloader
 Dataset = GratingCouplerDataset(x, y)
-dataloader = DataLoader(dataset = Dataset, batch_size=10000)
+dataloader = DataLoader(dataset = Dataset, batch_size=100000)
 
 # MODEL AND PARAMETERS
 GratingCouplerNet = Network().to(device)
 
-learning_rate = 0.0001
+learning_rate = 0.001
 weight_decay = 0
 optimizer = torch.optim.Adam(GratingCouplerNet.parameters(), lr=learning_rate)
 
