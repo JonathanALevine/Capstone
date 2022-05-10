@@ -19,6 +19,7 @@ else:
     dev = "cpu"
 
 device = torch.device(dev)
+print(device)
 
 
 def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
