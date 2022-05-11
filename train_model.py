@@ -23,7 +23,7 @@ print(device)
 
 
 def get_features(dataframe:pandas.DataFrame)->torch.Tensor:
-    return dataframe[["Theta", "Pitch", "Duty Cycle", "Fill Factor", "Lambda", "Mode"]].values
+    return dataframe[["Theta", "Pitch", "Duty Cycle", "Fill Factor", "Mode"]].values
 
 
 def get_labels(dataframe:pandas.DataFrame)->torch.Tensor:
@@ -109,10 +109,10 @@ class MSELoss(nn.Module):
 start_time = time.time()
 
 # Load the dataset from saved CSV
-training_set = decompress_pickle('datasets/training_set_normalized_features.pbz2')
+training_set = decompress_pickle('datasets/training_set/10May2022/training_set_10May2022_normalized_features.pbz2')
 training_set = training_set.sample(frac=1)
 
-testing_set = decompress_pickle('datasets/testing_set_normalized_features.pbz2')
+testing_set = decompress_pickle('datasets/testing_set/testing_set_normalized_features.pbz2')
 testing_set = testing_set.sample(frac=1)
 
 # TRAINING SET
