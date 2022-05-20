@@ -1,18 +1,20 @@
-import torch
+import time
+
 import numpy as np
 import pandas
-import time
+import torch
+from torch.utils.data import DataLoader
+
 import pickle_functions
 from Dataset import Dataset
-from torch.utils.data import DataLoader
-from MSE import MSE
-from Network import Network
 from get_features import get_features
 from get_labels import get_labels
+from MSE import MSE
+from Network import Network
 from transform_labels import transform_labels
 
 
-def train_network(num_epochs:int, dataloader:DataLoader, optimizer:torch.optim)->None:
+def train(num_epochs:int, dataloader:DataLoader, optimizer:torch.optim)->None:
     mse_loss = MSE()
     # Train GratingCouplerNet
     for epoch in range(num_epochs):
@@ -54,7 +56,7 @@ def train_network(num_epochs:int, dataloader:DataLoader, optimizer:torch.optim)-
         torch.cuda.empty_cache()
 
 
-def get_device_for_training()->None:
+def get_device_for_training()->str:
     # Use the GPU for training
     if torch.cuda.is_available():
         dev = "cuda:0"
@@ -63,9 +65,9 @@ def get_device_for_training()->None:
     return dev
 
 
-path_to_training_set = 'datasets/training_set/09May2022/training_set_normalized_features.pbz2'
+path_to_training_set = 'datasets/training_set/09May2022/training_set_normalized.pbz2'
 training_set = pickle_functions.decompress_pickle(path_to_training_set).sample(frac=1)
-path_to_testing_set = 'datasets/testing_set/testing_set_normalized_features.pbz2'
+path_to_testing_set = 'datasets/testing_set/testing_set_normalized.pbz2'
 testing_set = pickle_functions.decompress_pickle(path_to_testing_set).sample(frac=1)
 
 
@@ -78,13 +80,13 @@ if __name__ == '__main__':
 
     # TRAINING SET
     # Get the x, y values
-    x = torch.tensor(get_features(training_set), dtype=torch.float32).to(device)
-    y = torch.tensor(transform_labels(get_labels(training_set)), dtype=torch.float32).to(device)
+    x = torch.tensor(get_features(training_set), dtype=torch.float64).to(device)
+    y = torch.tensor(get_labels(training_set), dtype=torch.float64).to(device)
 
     # TESTING SET
     # Get the x, y values
-    x_test = torch.tensor(get_features(testing_set), dtype=torch.float32).to(device)
-    y_test = torch.tensor(transform_labels(get_labels(testing_set)), dtype=torch.float32).to(device)
+    x_test = torch.tensor(get_features(testing_set), dtype=torch.float64).to(device)
+    y_test = torch.tensor(get_labels(testing_set), dtype=torch.float64).to(device)
 
     # dataloader for batching
     Dataset = Dataset(x, y)
@@ -102,6 +104,6 @@ if __name__ == '__main__':
     learning_rate_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=decayRate)
 
     # TRAIN THE NETWORK
-    train_network(num_epochs=10, dataloader=dataloader, optimizer=optimizer)
+    train(num_epochs=10, dataloader=dataloader, optimizer=optimizer)
 
     print("Execution time: {}".format(time.time() - start_time))

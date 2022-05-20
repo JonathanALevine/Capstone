@@ -6,13 +6,13 @@ class Network(nn.Module):
         def __init__(self, num_features:int, num_labels:int, num_nodes:int):
                 super().__init__()
                 # Layer sizes
-                self.input = nn.Linear(num_features, num_nodes)
-                self.first_hidden = nn.Linear(num_nodes, num_nodes)
-                self.second_hidden = nn.Linear(num_nodes, num_nodes)
-                self.third_hidden = nn.Linear(num_nodes, num_nodes)
-                self.fourth_hidden = nn.Linear(num_nodes, num_nodes)
-                self.fifth_hidden = nn.Linear(num_nodes, num_nodes)
-                self.output = nn.Linear(num_nodes, num_labels)
+                self.input = nn.Linear(num_features, num_nodes).double()
+                self.first_hidden = nn.Linear(num_nodes, num_nodes).double()
+                self.second_hidden = nn.Linear(num_nodes, num_nodes).double()
+                self.third_hidden = nn.Linear(num_nodes, num_nodes).double()
+                self.fourth_hidden = nn.Linear(num_nodes, num_nodes).double()
+                self.fifth_hidden = nn.Linear(num_nodes, num_nodes).double()
+                self.output = nn.Linear(num_nodes, num_labels).double()
 
                 # Activation functions
                 self.relu = nn.ReLU()
