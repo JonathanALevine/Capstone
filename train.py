@@ -72,7 +72,7 @@ testing_set = pickle_functions.decompress_pickle(path_to_testing_set).sample(fra
 
 
 if __name__ == '__main__':
-    device = torch.device(get_device_for_training())
+    device = get_device_for_training()
     print(device)
 
     # Get the start time
